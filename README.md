@@ -2,7 +2,7 @@
 
 > Thoughtful note-taking for focused minds.
 
-A full-stack multi-user notes application with a clean light-theme UI. Built with Node.js, Express, SQLite, and a zero-dependency vanilla HTML/CSS/JS frontend — no build tools required.
+A full-stack multi-user notes application with a clean light-theme UI. Built with Node.js, Express, SQLite, and a zero-dependency vanilla HTML/CSS/JS frontend no build tools required.
 ---
 
 ## 📋 Table of Contents
