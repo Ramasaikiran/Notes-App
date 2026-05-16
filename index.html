@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Notis — Your Personal Notes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;1,400&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg:       #F6F4EE;
+  --bg2:      #EFEDE5;
+  --surface:  #FFFFFF;
+  --card:     #FFFFFF;
+  --border:   #E2DED4;
+  --border2:  #C8C3B8;
+  --text:     #1C1A16;
+  --text2:    #4A4640;
+  --muted:    #928D84;
+  --sage:     #3A6B4F;
+  --sage-lt:  #EAF2EC;
+  --sage2:    #2D5540;
+  --danger:   #C0392B;
+  --danger-lt:#FDF0EF;
+  --sky:      #2563EB;
+  --sky-lt:   #EFF6FF;
+  --r:        12px;
+  --shadow:   0 1px 3px rgba(28,26,22,.06), 0 4px 16px rgba(28,26,22,.07);
+  --shadow-lg:0 8px 32px rgba(28,26,22,.12), 0 2px 8px rgba(28,26,22,.06);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{font-family:'Instrument Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
+body::after{content:'';position:fixed;inset:0;background-image:radial-gradient(circle,#C8C3B8 1px,transparent 1px);background-size:28px 28px;pointer-events:none;opacity:.3;z-index:0;}
+
+/* AUTH */
+#auth-screen{position:relative;z-index:1;min-height:100vh;display:flex;}
+.auth-left{flex:1;background:var(--sage);display:flex;flex-direction:column;justify-content:space-between;padding:48px;position:relative;overflow:hidden;}
+.auth-left::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none'%3E%3Ccircle cx='30' cy='30' r='20' fill='%23ffffff' fill-opacity='0.04'/%3E%3C/g%3E%3C/svg%3E");}
+.auth-brand{position:relative;z-index:1;}
+.auth-brand-logo{font-family:'Fraunces',serif;font-size:2.6rem;font-weight:700;color:#fff;letter-spacing:-1.5px;line-height:1;margin-bottom:10px;}
+.auth-brand-sub{font-size:.875rem;color:rgba(255,255,255,.6);font-weight:400;}
+.auth-deco{position:absolute;top:50%;right:-20px;transform:translateY(-50%);display:flex;flex-direction:column;gap:12px;z-index:1;}
+.auth-deco-card{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);border-radius:10px;padding:14px 18px;width:200px;backdrop-filter:blur(8px);}
+.auth-deco-card-title{font-family:'Fraunces',serif;font-size:.85rem;color:rgba(255,255,255,.9);margin-bottom:4px;}
+.auth-deco-card-body{font-size:.72rem;color:rgba(255,255,255,.5);font-family:'Fira Code',monospace;line-height:1.5;}
+.auth-left-bottom{position:relative;z-index:1;}
+.auth-left-quote{font-family:'Fraunces',serif;font-size:1.5rem;font-weight:400;font-style:italic;color:rgba(255,255,255,.9);line-height:1.45;margin-bottom:12px;}
+.auth-left-attr{font-size:.8rem;color:rgba(255,255,255,.45);}
+.auth-right{width:480px;flex-shrink:0;display:flex;align-items:center;justify-content:center;padding:48px 40px;background:var(--surface);}
+.auth-box{width:100%;max-width:360px;}
+.auth-heading{font-family:'Fraunces',serif;font-size:1.9rem;font-weight:600;color:var(--text);margin-bottom:6px;letter-spacing:-.5px;}
+.auth-subheading{font-size:.875rem;color:var(--muted);margin-bottom:32px;}
+.auth-tabs{display:flex;border-bottom:2px solid var(--border);margin-bottom:28px;}
+.auth-tab{flex:1;padding:10px;background:none;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;font-family:'Instrument Sans',sans-serif;font-size:.875rem;font-weight:500;color:var(--muted);cursor:pointer;transition:color .2s,border-color .2s;}
+.auth-tab.active{color:var(--sage);border-bottom-color:var(--sage);}
+.field{margin-bottom:18px;}
+.field label{display:block;font-size:.72rem;font-weight:600;color:var(--text2);letter-spacing:.05em;text-transform:uppercase;margin-bottom:7px;}
+.field input{width:100%;padding:11px 14px;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;color:var(--text);font-family:'Instrument Sans',sans-serif;font-size:.9rem;transition:border-color .2s,background .2s;outline:none;}
+.field input:focus{border-color:var(--sage);background:#fff;box-shadow:0 0 0 3px var(--sage-lt);}
+.field input::placeholder{color:var(--muted);}
+.btn-primary{width:100%;padding:12px;background:var(--sage);color:#fff;border:none;border-radius:8px;font-family:'Instrument Sans',sans-serif;font-weight:600;font-size:.9rem;cursor:pointer;transition:background .2s,transform .1s;}
+.btn-primary:hover{background:var(--sage2);}
+.btn-primary:active{transform:scale(.98);}
+.auth-error{color:var(--danger);font-size:.8rem;margin-top:12px;text-align:center;min-height:18px;}
+
+/* APP */
+#app-screen{display:none;min-height:100vh;position:relative;z-index:1;}
+
+/* HEADER */
+.header{position:sticky;top:0;z-index:100;background:rgba(246,244,238,.92);backdrop-filter:blur(16px) saturate(180%);border-bottom:1px solid var(--border);padding:0 32px;display:flex;align-items:center;gap:16px;height:62px;}
+.header-logo{font-family:'Fraunces',serif;font-size:1.5rem;font-weight:700;color:var(--sage);letter-spacing:-1px;flex-shrink:0;}
+.header-divider{width:1px;height:22px;background:var(--border);flex-shrink:0;}
+.search-bar{flex:1;max-width:400px;display:flex;align-items:center;gap:9px;background:var(--surface);border:1.5px solid var(--border);border-radius:24px;padding:0 16px;transition:border-color .2s,box-shadow .2s;}
+.search-bar:focus-within{border-color:var(--sage);box-shadow:0 0 0 3px var(--sage-lt);}
+.search-bar input{flex:1;background:none;border:none;outline:none;color:var(--text);font-family:'Instrument Sans',sans-serif;font-size:.85rem;padding:9px 0;}
+.search-bar input::placeholder{color:var(--muted);}
+.search-icon{color:var(--muted);font-size:15px;flex-shrink:0;}
+.header-right{margin-left:auto;display:flex;align-items:center;gap:10px;}
+.user-pill{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--border);border-radius:24px;padding:4px 14px 4px 4px;}
+.user-avatar{width:28px;height:28px;border-radius:50%;background:var(--sage);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;flex-shrink:0;}
+.user-email{font-size:.78rem;color:var(--text2);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.btn-logout{background:none;border:1.5px solid var(--border);color:var(--muted);padding:6px 14px;border-radius:8px;font-size:.8rem;cursor:pointer;transition:all .2s;font-family:'Instrument Sans',sans-serif;font-weight:500;}
+.btn-logout:hover{border-color:var(--danger);color:var(--danger);background:var(--danger-lt);}
+
+/* MAIN */
+.main{max-width:1320px;margin:0 auto;padding:36px 32px;}
+.page-header{display:flex;align-items:center;gap:14px;margin-bottom:24px;}
+.page-title{font-family:'Fraunces',serif;font-size:1.65rem;font-weight:600;color:var(--text);letter-spacing:-.5px;}
+.notes-count{font-size:.78rem;color:var(--muted);background:var(--bg2);border:1px solid var(--border);padding:3px 10px;border-radius:20px;font-weight:500;}
+.btn-new{margin-left:auto;display:flex;align-items:center;gap:7px;background:var(--sage);color:#fff;border:none;border-radius:10px;padding:10px 20px;font-family:'Instrument Sans',sans-serif;font-weight:600;font-size:.875rem;cursor:pointer;transition:background .2s,transform .15s,box-shadow .2s;box-shadow:0 2px 8px rgba(58,107,79,.25);}
+.btn-new:hover{background:var(--sage2);box-shadow:0 4px 16px rgba(58,107,79,.3);}
+.btn-new:active{transform:scale(.97);}
+.filter-tabs{display:flex;gap:6px;margin-bottom:26px;flex-wrap:wrap;}
+.filter-tab{padding:6px 16px;background:var(--surface);border:1.5px solid var(--border);border-radius:20px;font-size:.8rem;font-weight:500;color:var(--muted);cursor:pointer;transition:all .2s;font-family:'Instrument Sans',sans-serif;}
+.filter-tab.active,.filter-tab:hover{background:var(--sage-lt);border-color:var(--sage);color:var(--sage);}
+
+/* GRID */
+.notes-grid{columns:4 260px;column-gap:18px;}
+.note-card{break-inside:avoid;margin-bottom:18px;background:var(--card);border-radius:var(--r);padding:22px;cursor:pointer;transition:transform .2s,box-shadow .2s;position:relative;animation:cardIn .35s ease both;box-shadow:var(--shadow);border:1px solid transparent;}
+.note-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-lg);border-color:var(--border);}
+.note-card.pinned{background:#FFFBF0;border-color:#F0E4A8;box-shadow:0 2px 12px rgba(196,162,45,.12);}
+.note-card.pinned::after{content:'';position:absolute;top:0;right:20px;width:14px;height:22px;background:#D4A017;clip-path:polygon(0 0,100% 0,100% 80%,50% 100%,0 80%);}
+.note-card.shared-note{border-left:3px solid var(--sky);}
+.note-card::before{content:'';position:absolute;top:0;left:20px;right:20px;height:3px;border-radius:0 0 3px 3px;opacity:0;transition:opacity .2s;background:var(--sage);}
+.note-card:hover::before{opacity:1;}
+.note-card.pinned::before{opacity:1;background:#D4A017;}
+.note-card-title{font-family:'Fraunces',serif;font-size:1rem;font-weight:600;color:var(--text);line-height:1.35;margin-bottom:10px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.note-card-preview{font-family:'Fira Code',monospace;font-size:.775rem;color:var(--muted);line-height:1.65;display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden;}
+.note-card-footer{display:flex;align-items:center;margin-top:16px;padding-top:14px;border-top:1px solid var(--bg2);gap:6px;}
+.note-date{font-size:.7rem;color:var(--muted);flex:1;}
+.card-action{background:none;border:none;color:var(--muted);cursor:pointer;font-size:13px;padding:5px 7px;border-radius:6px;transition:color .15s,background .15s;line-height:1;}
+.card-action:hover{color:var(--text);background:var(--bg2);}
+.card-action.pin-btn:hover{color:#D4A017;background:#FBF5D6;}
+.card-action.delete-btn:hover{color:var(--danger);background:var(--danger-lt);}
+.card-action.share-btn:hover{color:var(--sky);background:var(--sky-lt);}
+
+/* EMPTY */
+.empty-state{text-align:center;padding:80px 0;}
+.empty-icon{width:72px;height:72px;border-radius:20px;background:var(--sage-lt);border:2px dashed rgba(58,107,79,.4);display:flex;align-items:center;justify-content:center;font-size:2rem;margin:0 auto 20px;}
+.empty-title{font-family:'Fraunces',serif;font-size:1.3rem;font-weight:600;color:var(--text2);margin-bottom:8px;}
+.empty-sub{font-size:.875rem;color:var(--muted);}
+
+/* MODALS */
+.overlay{position:fixed;inset:0;background:rgba(28,26,22,.4);backdrop-filter:blur(6px);z-index:200;display:none;align-items:center;justify-content:center;padding:24px;}
+.overlay.open{display:flex;}
+.modal{background:var(--surface);border-radius:16px;padding:30px;width:100%;max-width:580px;animation:modalIn .22s ease both;max-height:90vh;display:flex;flex-direction:column;box-shadow:0 24px 80px rgba(28,26,22,.2),0 4px 16px rgba(28,26,22,.08);border:1px solid var(--border);}
+.modal-head{display:flex;align-items:center;margin-bottom:24px;gap:12px;}
+.modal-icon{width:36px;height:36px;border-radius:10px;background:var(--sage-lt);border:1px solid rgba(58,107,79,.15);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+.modal-title{font-family:'Fraunces',serif;font-size:1.15rem;font-weight:600;color:var(--text);}
+.modal-close{margin-left:auto;background:none;border:none;color:var(--muted);width:30px;height:30px;border-radius:6px;cursor:pointer;font-size:16px;transition:color .15s,background .15s;display:flex;align-items:center;justify-content:center;}
+.modal-close:hover{color:var(--text);background:var(--bg2);}
+.modal-body{overflow-y:auto;flex:1;}
+.modal-field{margin-bottom:18px;}
+.modal-field label{display:block;font-size:.72rem;font-weight:600;color:var(--text2);letter-spacing:.05em;text-transform:uppercase;margin-bottom:7px;}
+.modal-field input,.modal-field textarea{width:100%;padding:11px 14px;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;color:var(--text);font-size:.9rem;outline:none;transition:border-color .2s;}
+.modal-field input{font-family:'Instrument Sans',sans-serif;}
+.modal-field textarea{font-family:'Fira Code',monospace;resize:vertical;min-height:200px;line-height:1.65;}
+.modal-field input:focus,.modal-field textarea:focus{border-color:var(--sage);background:#fff;box-shadow:0 0 0 3px var(--sage-lt);}
+.modal-field input::placeholder,.modal-field textarea::placeholder{color:var(--muted);}
+.modal-foot{display:flex;gap:10px;justify-content:flex-end;margin-top:22px;padding-top:20px;border-top:1px solid var(--border);}
+.btn-secondary{padding:9px 18px;background:none;border:1.5px solid var(--border);color:var(--text2);border-radius:8px;font-family:'Instrument Sans',sans-serif;font-size:.875rem;font-weight:500;cursor:pointer;transition:all .2s;}
+.btn-secondary:hover{border-color:var(--border2);background:var(--bg2);}
+.btn-danger-soft{padding:9px 18px;background:none;border:1.5px solid rgba(192,57,43,.25);color:var(--danger);border-radius:8px;font-family:'Instrument Sans',sans-serif;font-size:.875rem;font-weight:500;cursor:pointer;transition:all .2s;}
+.btn-danger-soft:hover{background:var(--danger-lt);border-color:var(--danger);}
+
+/* VIEW */
+.view-note-title{font-family:'Fraunces',serif;font-size:1.55rem;font-weight:600;color:var(--text);line-height:1.3;margin-bottom:12px;}
+.view-note-meta{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:24px;}
+.view-note-content{font-family:'Fira Code',monospace;font-size:.875rem;line-height:1.8;color:var(--text2);white-space:pre-wrap;word-break:break-word;}
+.view-badge{display:inline-flex;align-items:center;gap:5px;font-size:.72rem;padding:3px 10px;border-radius:20px;font-family:'Instrument Sans',sans-serif;font-weight:500;}
+.badge-pinned{background:#FBF5D6;color:#8A6A00;border:1px solid #F0E4A8;}
+.badge-shared{background:var(--sky-lt);color:var(--sky);border:1px solid #BFDBFE;}
+.badge-date{background:var(--bg2);color:var(--muted);border:1px solid var(--border);}
+.view-actions{display:flex;gap:8px;margin-top:28px;padding-top:20px;border-top:1px solid var(--border);flex-wrap:wrap;}
+.btn-action{display:flex;align-items:center;gap:6px;padding:8px 14px;background:var(--bg);border:1.5px solid var(--border);color:var(--text2);border-radius:8px;font-family:'Instrument Sans',sans-serif;font-size:.8rem;font-weight:500;cursor:pointer;transition:all .15s;}
+.btn-action:hover{border-color:var(--sage);color:var(--sage);background:var(--sage-lt);}
+.btn-action.danger:hover{border-color:var(--danger);color:var(--danger);background:var(--danger-lt);}
+
+/* SHARE */
+.share-note-title{font-family:'Fraunces',serif;font-size:.95rem;font-style:italic;color:var(--sage2);margin-bottom:20px;padding:12px 16px;background:var(--sage-lt);border:1px solid rgba(58,107,79,.15);border-radius:8px;line-height:1.4;}
+.share-chip{display:inline-flex;align-items:center;gap:6px;background:var(--sky-lt);border:1px solid #BFDBFE;border-radius:20px;padding:4px 12px;font-size:.8rem;color:var(--sky);margin:4px 4px 4px 0;}
+.share-chip-dot{width:6px;height:6px;border-radius:50%;background:var(--sky);}
+
+/* HISTORY */
+.version-item{padding:14px 16px;margin-bottom:8px;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;cursor:pointer;transition:all .15s;}
+.version-item:hover{border-color:var(--sage);background:var(--sage-lt);}
+.version-ts{font-size:.72rem;color:var(--muted);margin-bottom:4px;}
+.version-title{font-family:'Fraunces',serif;font-size:.9rem;color:var(--text);}
+
+/* TOAST */
+.toast-wrap{position:fixed;bottom:24px;right:24px;z-index:500;display:flex;flex-direction:column-reverse;gap:8px;}
+.toast{background:var(--text);border-radius:10px;padding:12px 18px;font-size:.85rem;color:#fff;box-shadow:0 8px 32px rgba(28,26,22,.25);animation:toastIn .3s ease both;max-width:320px;display:flex;align-items:center;gap:10px;}
+.toast-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.toast.success .toast-dot{background:#4CAF6A;}
+.toast.error .toast-dot{background:#F44336;}
+
+/* SPINNER */
+.spinner{width:20px;height:20px;border:2px solid var(--border);border-top-color:var(--sage);border-radius:50%;animation:spin .7s linear infinite;display:inline-block;}
+
+/* KEYFRAMES */
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes cardIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes modalIn{from{opacity:0;transform:scale(.95) translateY(12px)}to{opacity:1;transform:scale(1) translateY(0)}}
+@keyframes toastIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+@media(max-width:768px){.auth-left{display:none;}.auth-right{width:100%;}.header{padding:0 16px;}.main{padding:20px 16px;}.notes-grid{columns:1;}}
+@media(max-width:480px){.user-email{display:none;}.search-bar{max-width:200px;}}
+</style>
+</head>
+<body>
+
+<!-- AUTH -->
+<div id="auth-screen">
+  <div class="auth-left">
+    <div class="auth-brand">
+      <div class="auth-brand-logo">Notis.</div>
+      <div class="auth-brand-sub">Thoughtful note-taking for focused minds</div>
+    </div>
+    <div class="auth-deco">
+      <div class="auth-deco-card">
+        <div class="auth-deco-card-title">IdeaAudit — Roadmap</div>
+        <div class="auth-deco-card-body">Phase 1: Claude API<br/>Phase 2: Gemma 4 local...</div>
+      </div>
+      <div class="auth-deco-card" style="transform:translateX(20px)">
+        <div class="auth-deco-card-title">Placement checklist</div>
+        <div class="auth-deco-card-body">✓ DSA Arrays, Strings<br/>→ SQL practice...</div>
+      </div>
+      <div class="auth-deco-card">
+        <div class="auth-deco-card-title">LinkedIn calendar</div>
+        <div class="auth-deco-card-body">Mon: AI breakdown<br/>Wed: BuildInPublic...</div>
+      </div>
+    </div>
+    <div class="auth-left-bottom">
+      <div class="auth-left-quote">"The palest ink is better than the best memory."</div>
+      <div class="auth-left-attr">— Chinese Proverb</div>
+    </div>
+  </div>
+  <div class="auth-right">
+    <div class="auth-box">
+      <div class="auth-heading">Welcome back</div>
+      <div class="auth-subheading">Sign in to your notes</div>
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="tab-login" onclick="switchTab('login')">Sign in</button>
+        <button class="auth-tab" id="tab-register" onclick="switchTab('register')">Create account</button>
+      </div>
+      <div class="field"><label>Email address</label><input type="email" id="auth-email" placeholder="you@example.com" autocomplete="email"/></div>
+      <div class="field"><label>Password</label><input type="password" id="auth-password" placeholder="Min. 6 characters" autocomplete="current-password"/></div>
+      <button class="btn-primary" id="auth-btn" onclick="handleAuth()">Sign in →</button>
+      <div class="auth-error" id="auth-error"></div>
+    </div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app-screen">
+  <header class="header">
+    <div class="header-logo">Notis.</div>
+    <div class="header-divider"></div>
+    <div class="search-bar">
+      <span class="search-icon">⌕</span>
+      <input type="text" id="search-input" placeholder="Search your notes…" oninput="debounceSearch(this.value)"/>
+    </div>
+    <div class="header-right">
+      <div class="user-pill">
+        <div class="user-avatar" id="user-avatar">?</div>
+        <span class="user-email" id="user-email-display"></span>
+      </div>
+      <button class="btn-logout" onclick="logout()">Sign out</button>
+    </div>
+  </header>
+  <main class="main">
+    <div class="page-header">
+      <div class="page-title" id="page-title">My Notes</div>
+      <div class="notes-count" id="notes-count">0 notes</div>
+      <button class="btn-new" onclick="openNewNote()">+ New note</button>
+    </div>
+    <div class="filter-tabs">
+      <button class="filter-tab active" onclick="filterNotes('all',this)">All notes</button>
+      <button class="filter-tab" onclick="filterNotes('pinned',this)">📌 Pinned</button>
+      <button class="filter-tab" onclick="filterNotes('shared',this)">↗ Shared with me</button>
+    </div>
+    <div class="notes-grid" id="notes-grid"></div>
+    <div id="load-more-wrap" style="text-align:center;margin-top:28px;display:none">
+      <button class="btn-secondary" onclick="loadMore()">Load more notes</button>
+    </div>
+  </main>
+</div>
+
+<!-- EDIT MODAL -->
+<div class="overlay" id="edit-overlay" onclick="overlayClick(event,'edit-overlay')">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-icon">✏️</div>
+      <div class="modal-title" id="edit-modal-title">New Note</div>
+      <button class="modal-close" onclick="closeModal('edit-overlay')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-field"><label>Title</label><input type="text" id="note-title" placeholder="Give your note a title…" maxlength="255"/></div>
+      <div class="modal-field"><label>Content</label><textarea id="note-content" placeholder="Start writing your note…"></textarea></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-secondary" onclick="closeModal('edit-overlay')">Cancel</button>
+      <button class="btn-primary" style="width:auto;padding:10px 28px" onclick="saveNote()">Save note</button>
+    </div>
+  </div>
+</div>
+
+<!-- VIEW MODAL -->
+<div class="overlay" id="view-overlay" onclick="overlayClick(event,'view-overlay')">
+  <div class="modal" style="max-width:640px">
+    <div class="modal-head">
+      <div class="modal-icon">📄</div>
+      <div style="flex:1"></div>
+      <button class="modal-close" onclick="closeModal('view-overlay')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="view-note-meta" id="view-meta"></div>
+      <div class="view-note-title" id="view-title"></div>
+      <div class="view-note-content" id="view-content"></div>
+    </div>
+    <div class="view-actions">
+      <button class="btn-action" id="btn-edit-from-view" onclick="editFromView()">✏️ Edit</button>
+      <button class="btn-action" id="btn-pin-from-view" onclick="pinFromView()">📌 Pin</button>
+      <button class="btn-action" onclick="shareFromView()">↗ Share</button>
+      <button class="btn-action" onclick="historyFromView()">🕓 History</button>
+      <button class="btn-action danger" onclick="deleteFromView()">🗑 Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- SHARE MODAL -->
+<div class="overlay" id="share-overlay" onclick="overlayClick(event,'share-overlay')">
+  <div class="modal" style="max-width:440px">
+    <div class="modal-head">
+      <div class="modal-icon">↗</div>
+      <div class="modal-title">Share Note</div>
+      <button class="modal-close" onclick="closeModal('share-overlay')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="share-note-title" id="share-note-title"></div>
+      <div class="modal-field"><label>Share with email</label><input type="email" id="share-email" placeholder="colleague@example.com"/></div>
+      <div id="share-list" style="display:none;margin-top:16px">
+        <div style="font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:10px">Already shared with</div>
+        <div id="share-chips"></div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-secondary" onclick="closeModal('share-overlay')">Cancel</button>
+      <button class="btn-primary" style="width:auto;padding:10px 24px" onclick="doShare()">Share</button>
+    </div>
+  </div>
+</div>
+
+<!-- HISTORY MODAL -->
+<div class="overlay" id="history-overlay" onclick="overlayClick(event,'history-overlay')">
+  <div class="modal" style="max-width:500px">
+    <div class="modal-head">
+      <div class="modal-icon">🕓</div>
+      <div class="modal-title">Version History</div>
+      <button class="modal-close" onclick="closeModal('history-overlay')">✕</button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:.8rem;color:var(--muted);margin-bottom:16px">Previous versions are saved automatically each time you edit.</p>
+      <div id="versions-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- DELETE MODAL -->
+<div class="overlay" id="delete-overlay" onclick="overlayClick(event,'delete-overlay')">
+  <div class="modal" style="max-width:380px">
+    <div class="modal-head">
+      <div class="modal-icon" style="background:var(--danger-lt);border-color:rgba(192,57,43,.15)">🗑</div>
+      <div class="modal-title">Delete note?</div>
+      <button class="modal-close" onclick="closeModal('delete-overlay')">✕</button>
+    </div>
+    <div class="modal-body"><p style="font-size:.875rem;color:var(--text2);line-height:1.65">This will permanently delete the note and all its version history. This action cannot be undone.</p></div>
+    <div class="modal-foot">
+      <button class="btn-secondary" onclick="closeModal('delete-overlay')">Keep it</button>
+      <button class="btn-danger-soft" onclick="confirmDelete()">Yes, delete</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-wrap" id="toast-wrap"></div>
+
+<script>
+const API = window.location.origin;
+let token = localStorage.getItem('notis_token') || '';
+let userEmail = localStorage.getItem('notis_email') || '';
+let currentMode = 'login';
+let editingNoteId = null;
+let viewingNote = null;
+let allNotes = [];
+let currentPage = 1;
+let totalPages = 1;
+let searchTimer = null;
+let isSearchMode = false;
+let activeFilter = 'all';
+let deletingId = null;
+
+(function init() {
+  if (token) showApp();
+  else document.getElementById('auth-screen').style.display = 'flex';
+})();
+
+function switchTab(mode) {
+  currentMode = mode;
+  document.getElementById('tab-login').classList.toggle('active', mode === 'login');
+  document.getElementById('tab-register').classList.toggle('active', mode === 'register');
+  document.getElementById('auth-btn').textContent = mode === 'login' ? 'Sign in →' : 'Create account →';
+  document.getElementById('auth-error').textContent = '';
+}
+
+async function handleAuth() {
+  const email = document.getElementById('auth-email').value.trim();
+  const password = document.getElementById('auth-password').value;
+  const errEl = document.getElementById('auth-error');
+  errEl.textContent = '';
+  if (!email || !password) { errEl.textContent = 'Email and password required.'; return; }
+  const btn = document.getElementById('auth-btn');
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>';
+  try {
+    if (currentMode === 'register') {
+      const r = await apiFetch('/register','POST',{email,password});
+      if (r.ok) { toast('Account created — sign in!','success'); switchTab('login'); }
+      else { const d = await r.json(); errEl.textContent = d.message || 'Registration failed.'; }
+    } else {
+      const r = await apiFetch('/login','POST',{email,password});
+      if (r.ok) {
+        const d = await r.json(); token = d.access_token; userEmail = email;
+        localStorage.setItem('notis_token',token); localStorage.setItem('notis_email',email);
+        showApp();
+      } else { const d = await r.json(); errEl.textContent = d.message || 'Login failed.'; }
+    }
+  } finally { btn.disabled = false; btn.textContent = currentMode === 'login' ? 'Sign in →' : 'Create account →'; }
+}
+
+document.getElementById('auth-password').addEventListener('keydown', e => { if (e.key === 'Enter') handleAuth(); });
+
+async function logout() {
+  try { await apiFetch('/logout', 'POST'); } catch (_) {}
+  token = ''; userEmail = '';
+  localStorage.removeItem('notis_token'); localStorage.removeItem('notis_email');
+  document.getElementById('app-screen').style.display = 'none';
+  document.getElementById('auth-screen').style.display = 'flex';
+  document.getElementById('auth-email').value = '';
+  document.getElementById('auth-password').value = '';
+  document.getElementById('auth-error').textContent = '';
+}
+
+function showApp() {
+  document.getElementById('auth-screen').style.display = 'none';
+  document.getElementById('app-screen').style.display = 'block';
+  document.getElementById('user-avatar').textContent = userEmail.charAt(0).toUpperCase();
+  document.getElementById('user-email-display').textContent = userEmail;
+  allNotes = []; currentPage = 1; totalPages = 1;
+  loadNotes();
+}
+
+async function apiFetch(path, method='GET', body=null) {
+  const opts = { method, headers: {'Content-Type':'application/json'} };
+  if (token && (path.startsWith('/notes') || path.startsWith('/search'))) opts.headers['Authorization'] = `Bearer ${token}`;
+  if (body) opts.body = JSON.stringify(body);
+  return fetch(API + path, opts);
+}
+
+async function loadNotes(page=1) {
+  try {
+    const r = await apiFetch(`/notes?page=${page}&limit=20`);
+    if (r.status === 401) { logout(); return; }
+    const d = await r.json();
+    if (page === 1) allNotes = d.data || []; else allNotes = [...allNotes, ...(d.data||[])];
+    currentPage = d.pagination?.page || 1; totalPages = d.pagination?.pages || 1;
+    renderNotes(getFilteredNotes());
+    document.getElementById('load-more-wrap').style.display = currentPage < totalPages ? 'block' : 'none';
+  } catch { toast('Failed to load notes','error'); renderNotes([]); }
+}
+
+async function loadMore() { await loadNotes(currentPage + 1); }
+
+function getFilteredNotes() {
+  if (activeFilter === 'pinned') return allNotes.filter(n => n.is_pinned);
+  if (activeFilter === 'shared') return allNotes.filter(n => n.owner_id && String(n.owner_id) !== getUserId());
+  return allNotes;
+}
+
+function filterNotes(filter, btn) {
+  activeFilter = filter;
+  document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  isSearchMode = false;
+  document.getElementById('search-input').value = '';
+  renderNotes(getFilteredNotes());
+}
+
+function renderNotes(notes) {
+  const g = document.getElementById('notes-grid');
+  document.getElementById('notes-count').textContent = `${notes.length} note${notes.length!==1?'s':''}`;
+  document.getElementById('page-title').textContent = isSearchMode ? 'Search results' : 'My Notes';
+  if (!notes.length) {
+    g.innerHTML = `<div class="empty-state"><div class="empty-icon">${isSearchMode?'🔍':'📄'}</div><div class="empty-title">${isSearchMode?'No notes found':'Nothing here yet'}</div><div class="empty-sub">${isSearchMode?'Try a different search term':'Click "+ New note" to get started'}</div></div>`;
+    return;
+  }
+  const sorted = [...notes].sort((a,b) => b.is_pinned - a.is_pinned);
+  g.innerHTML = sorted.map((n,i) => {
+    const isOwner = !n.owner_id || String(n.owner_id) === getUserId();
+    const isShared = !isOwner;
+    return `
+    <div class="note-card ${n.is_pinned?'pinned':''} ${isShared?'shared-note':''}"
+         style="animation-delay:${Math.min(i*0.045,0.45)}s"
+         onclick="viewNote('${n.id}')">
+      <div class="note-card-title">${esc(n.title)}</div>
+      <div class="note-card-preview">${esc(n.content)}</div>
+      <div class="note-card-footer">
+        <div class="note-date">${fmtDate(n.updated_at)}</div>
+        ${isOwner ? `
+          <button class="card-action pin-btn" title="${n.is_pinned?'Unpin':'Pin'}" onclick="evt(event);togglePin('${n.id}')">${n.is_pinned?'📌':'☆'}</button>
+          <button class="card-action share-btn" title="Share" onclick="evt(event);openShare('${n.id}')">↗</button>
+          <button class="card-action delete-btn" title="Delete" onclick="evt(event);askDelete('${n.id}')">✕</button>
+        ` : '<span class="view-badge badge-shared">shared</span>'}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function debounceSearch(val) {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(async () => {
+    if (!val.trim()) { isSearchMode = false; renderNotes(getFilteredNotes()); return; }
+    isSearchMode = true;
+    try {
+      const r = await apiFetch(`/search?q=${encodeURIComponent(val)}`);
+      if (r.ok) { const d = await r.json(); renderNotes(d); }
+    } catch { toast('Search failed','error'); }
+  }, 350);
+}
+
+function openNewNote() {
+  editingNoteId = null;
+  document.getElementById('edit-modal-title').textContent = 'New Note';
+  document.getElementById('note-title').value = '';
+  document.getElementById('note-content').value = '';
+  openModal('edit-overlay');
+  setTimeout(() => document.getElementById('note-title').focus(), 100);
+}
+
+function editNote(id) {
+  const n = allNotes.find(x => x.id === id); if (!n) return;
+  editingNoteId = id;
+  document.getElementById('edit-modal-title').textContent = 'Edit Note';
+  document.getElementById('note-title').value = n.title;
+  document.getElementById('note-content').value = n.content;
+  openModal('edit-overlay');
+}
+
+async function saveNote() {
+  const title = document.getElementById('note-title').value.trim();
+  const content = document.getElementById('note-content').value.trim();
+  if (!title) { toast('Title is required','error'); return; }
+  if (!content) { toast('Content is required','error'); return; }
+  try {
+    const r = editingNoteId
+      ? await apiFetch(`/notes/${editingNoteId}`,'PUT',{title,content})
+      : await apiFetch('/notes','POST',{title,content});
+    if (r.ok) {
+      const note = await r.json();
+      if (editingNoteId) { const idx = allNotes.findIndex(x=>x.id===editingNoteId); if(idx>-1) allNotes[idx]=note; }
+      else allNotes.unshift(note);
+      renderNotes(getFilteredNotes());
+      closeModal('edit-overlay');
+      toast(editingNoteId?'Note updated':'Note created','success');
+    } else { const d = await r.json(); toast(d.message||'Failed to save','error'); }
+  } catch { toast('Network error','error'); }
+}
+
+function viewNote(id) {
+  const n = allNotes.find(x => x.id === id); if (!n) return;
+  viewingNote = n;
+  const isOwner = !n.owner_id || String(n.owner_id) === getUserId();
+  document.getElementById('view-title').textContent = n.title;
+  document.getElementById('view-content').textContent = n.content;
+  const meta = [`<span class="view-badge badge-date">${fmtDate(n.updated_at)}</span>`,n.is_pinned?'<span class="view-badge badge-pinned">📌 Pinned</span>':'',!isOwner?'<span class="view-badge badge-shared">↗ Shared with you</span>':''].filter(Boolean).join('');
+  document.getElementById('view-meta').innerHTML = meta;
+  ['btn-edit-from-view','btn-pin-from-view'].forEach(b => document.getElementById(b).style.display = isOwner?'':'none');
+  document.getElementById('btn-pin-from-view').textContent = n.is_pinned ? '📌 Unpin' : '📌 Pin';
+  openModal('view-overlay');
+}
+
+function editFromView() { closeModal('view-overlay'); editNote(viewingNote.id); }
+function pinFromView()  { togglePin(viewingNote.id); closeModal('view-overlay'); }
+function shareFromView(){ closeModal('view-overlay'); openShare(viewingNote.id); }
+function deleteFromView(){ closeModal('view-overlay'); askDelete(viewingNote.id); }
+async function historyFromView(){ closeModal('view-overlay'); await openHistory(viewingNote.id); }
+
+async function togglePin(id) {
+  try {
+    const r = await apiFetch(`/notes/${id}/pin`,'PATCH');
+    if (r.ok) {
+      const note = await r.json();
+      const idx = allNotes.findIndex(x=>x.id===id);
+      if(idx>-1) allNotes[idx]=note;
+      allNotes.sort((a,b)=>b.is_pinned-a.is_pinned);
+      renderNotes(getFilteredNotes());
+      toast(note.is_pinned?'Note pinned':'Note unpinned','success');
+    }
+  } catch { toast('Failed to update','error'); }
+}
+
+function openShare(id) {
+  const n = allNotes.find(x=>x.id===id); if (!n) return;
+  viewingNote = n;
+  document.getElementById('share-note-title').textContent = n.title;
+  document.getElementById('share-email').value = '';
+  document.getElementById('share-list').style.display = 'none';
+  document.getElementById('share-chips').innerHTML = '';
+  openModal('share-overlay');
+  setTimeout(() => document.getElementById('share-email').focus(), 100);
+}
+
+async function doShare() {
+  const email = document.getElementById('share-email').value.trim();
+  if (!email) { toast('Enter an email address','error'); return; }
+  try {
+    const r = await apiFetch(`/notes/${viewingNote.id}/share`,'POST',{share_with_email:email});
+    const d = await r.json();
+    if (r.ok) {
+      toast(d.message||'Shared!','success');
+      document.getElementById('share-chips').innerHTML += `<div class="share-chip"><div class="share-chip-dot"></div>${esc(email)}</div>`;
+      document.getElementById('share-list').style.display = 'block';
+      document.getElementById('share-email').value = '';
+    } else toast(d.message||'Share failed','error');
+  } catch { toast('Network error','error'); }
+}
+
+function askDelete(id) { deletingId = id; openModal('delete-overlay'); }
+async function confirmDelete() {
+  if (!deletingId) return;
+  try {
+    const r = await apiFetch(`/notes/${deletingId}`,'DELETE');
+    if (r.status === 204) { allNotes = allNotes.filter(x=>x.id!==deletingId); renderNotes(getFilteredNotes()); toast('Note deleted','success'); }
+    else { const d = await r.json(); toast(d.message||'Delete failed','error'); }
+  } catch { toast('Network error','error'); }
+  finally { closeModal('delete-overlay'); deletingId = null; }
+}
+
+async function openHistory(id) {
+  const list = document.getElementById('versions-list');
+  list.innerHTML = '<div class="spinner" style="margin:16px auto;display:block"></div>';
+  openModal('history-overlay');
+  try {
+    const r = await apiFetch(`/notes/${id}/versions`);
+    if (r.ok) {
+      const versions = await r.json();
+      if (!versions.length) { list.innerHTML = '<p style="font-size:.85rem;color:var(--muted)">No previous versions found.</p>'; return; }
+      list.innerHTML = versions.map(v => `
+        <div class="version-item" onclick='previewVersion(${JSON.stringify(v).replace(/</g,"&lt;")})'>
+          <div class="version-ts">${fmtDate(v.created_at)}</div>
+          <div class="version-title">${esc(v.title)}</div>
+          <div style="font-size:.75rem;color:var(--muted);margin-top:4px;font-family:'Fira Code',monospace">${esc(v.content.substring(0,80))}${v.content.length>80?'…':''}</div>
+        </div>`).join('');
+    } else list.innerHTML = '<p style="color:var(--danger);font-size:.85rem">Failed to load history.</p>';
+  } catch { list.innerHTML = '<p style="color:var(--danger);font-size:.85rem">Network error.</p>'; }
+}
+
+function previewVersion(v) {
+  closeModal('history-overlay');
+  setTimeout(() => {
+    document.getElementById('view-title').textContent = v.title;
+    document.getElementById('view-content').textContent = v.content;
+    document.getElementById('view-meta').innerHTML = `<span class="view-badge badge-date">📷 Snapshot — ${fmtDate(v.created_at)}</span>`;
+    openModal('view-overlay');
+  }, 150);
+}
+
+function openModal(id)  { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+function overlayClick(e,id) { if(e.target.id===id) closeModal(id); }
+document.addEventListener('keydown', e => { if(e.key==='Escape') ['edit-overlay','view-overlay','share-overlay','history-overlay','delete-overlay'].forEach(closeModal); });
+
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function fmtDate(iso) {
+  if (!iso) return '';
+  const d = new Date(iso.includes('T')?iso:iso+'Z');
+  const diff = Date.now()-d;
+  if (diff<60000)    return 'just now';
+  if (diff<3600000)  return `${Math.floor(diff/60000)}m ago`;
+  if (diff<86400000) return `${Math.floor(diff/3600000)}h ago`;
+  if (diff<604800000)return `${Math.floor(diff/86400000)}d ago`;
+  return d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+}
+function evt(e) { e.stopPropagation(); }
+function getUserId() { try { return String(JSON.parse(atob(token.split('.')[1])).id); } catch { return ''; } }
+
+function toast(msg, type='success') {
+  const wrap = document.getElementById('toast-wrap');
+  const t = document.createElement('div');
+  t.className = `toast ${type}`;
+  t.innerHTML = `<div class="toast-dot"></div>${msg}`;
+  wrap.appendChild(t);
+  setTimeout(()=>{ t.style.opacity='0'; t.style.transition='opacity .3s'; },2800);
+  setTimeout(()=>t.remove(),3100);
+}
+</script>
+</body>
+</html>
